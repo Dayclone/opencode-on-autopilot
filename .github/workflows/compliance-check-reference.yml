@@ -214,7 +214,7 @@ jobs:
       # This prevents malicious PRs from injecting code into the AI prompt.
       - name: Checkout base branch (for trusted prompt)
         if: github.event_name != 'issue_comment' || steps.validate.outputs.should_proceed == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Initialize bot credentials and OpenCode API access
       - name: Bot Setup
@@ -373,7 +373,7 @@ jobs:
       # The prompt is already secured in /tmp
       - name: Checkout PR Head for Diff Generation
         if: github.event_name != 'issue_comment' || steps.validate.outputs.should_proceed == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.pr_info.outputs.head_sha }}
           fetch-depth: 0  # Full history needed for diff

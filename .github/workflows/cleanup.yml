@@ -31,7 +31,7 @@ jobs:
       PROTECTED_BRANCHES: "main,master,production,prod,staging,develop"
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Determine branch name and mode
         id: config

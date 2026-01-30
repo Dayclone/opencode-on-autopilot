@@ -95,7 +95,7 @@ jobs:
 
       - name: Checkout repository
         if: github.event_name != 'issue_comment' || steps.validate.outputs.should_proceed == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Bot Setup
         if: github.event_name != 'issue_comment' || steps.validate.outputs.should_proceed == 'true'
@@ -524,7 +524,7 @@ jobs:
 
       - name: Checkout PR head
         if: github.event_name != 'issue_comment' || steps.validate.outputs.should_proceed == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ env.PR_HEAD_SHA }}
           token: ${{ steps.setup.outputs.token }}
