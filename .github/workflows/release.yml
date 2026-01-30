@@ -84,23 +84,14 @@ jobs:
           echo "filename=$VSIX_FILE" >> $GITHUB_OUTPUT
           echo "Built: $VSIX_FILE"
 
-      - name: Generate changelog
-        id: changelog
-        run: |
-          # Get the previous tag
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          
-          if [ -z "$PREV_TAG" ]; then
-            echo "No previous tag found, using all commits"
-            CHANGES=$(git log --pretty=format:"- %s (%h)" --no-merges HEAD)
-          else
-            echo "Getting changes since $PREV_TAG"
-            CHANGES=$(git log --pretty=format:"- %s (%h)" --no-merges $PREV_TAG..HEAD)
-          fi
-          
-          # Write to file to preserve newlines
-          echo "$CHANGES" > changelog.txt
-          echo "Generated changelog with $(echo "$CHANGES" | wc -l) entries"
+      - name: Generate Changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: changelog.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -115,7 +106,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload VSIX as artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: opencode-on-autopilot-${{ steps.version.outputs.version }}
           path: '*.vsix'
@@ -130,10 +121,10 @@ jobs:
         os: [windows-latest, macos-latest]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'

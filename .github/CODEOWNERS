@@ -1,12 +1,2 @@
-# This ensures @Dayclone must approve any change to any file
-# Default owners for everything in the repo
-* @Dayclone
-
-# CI/CD configuration
-/.github/ @Dayclone
-
-# Core extension code
-/src/ @Dayclone
-
-# Tests
-/test/ @Dayclone
+# This ensures @Mirrowel must approve any change to any file
+* @Mirrowel
