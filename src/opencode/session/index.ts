@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { ChildProcess } from 'child_process';
-import * as path from 'path';
 import { processUtils } from '../../utils/process';
 import { fsUtils } from '../../utils/fs';
 import {

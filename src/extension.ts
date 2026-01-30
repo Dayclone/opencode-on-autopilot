@@ -13,7 +13,7 @@ import {
     deleteHistoryRun, deleteAllHistory,
     startAutomaticMaintenance, stopAutomaticMaintenance, performQueueMaintenance, getMemoryUsageSummary
 } from './queue';
-import { recoverWaitingMessages, stopSleepPrevention, stopHealthCheck, startScheduledSession, stopScheduledSession } from './services';
+import { stopSleepPrevention, stopHealthCheck, startScheduledSession, stopScheduledSession } from './services';
 import { sendSecuritySettings, toggleXssbypassSetting } from './services/security';
 import { debugLog } from './utils';
 import { showError, showInfo, showWarning, showInput, Messages, showErrorFromException } from './utils/notifications';
@@ -268,14 +268,16 @@ export function activate(context: vscode.ExtensionContext) {
                             }
                             break;
                         case 'getWebServerStatus':
-                            try {
-                                const webServer = getMobileServer();
-                                const status = webServer.getServerStatus();
-                                panel.webview.postMessage({
-                                    command: 'webServerStatusUpdate',
-                                    status: status
-                                });
-                            } catch (error) {
+            try {
+                getMobileServer();
+                const webServer = getMobileServer();
+                const webUrl = webServer.getWebUrl();
+                if (webUrl) {
+                    vscode.env.openExternal(vscode.Uri.parse(webUrl));
+                } else {
+                    showError(Messages.WEB_INTERFACE_NOT_RUNNING);
+                }
+            } catch (error) {
                                 debugLog(`Error getting web server status: ${error}`);
                             }
                             break;

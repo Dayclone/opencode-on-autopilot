@@ -1,18 +1,16 @@
 import { opencodePanel, opencodeOutputBuffer, opencodeCurrentScreen, opencodeOutputTimer, opencodeAutoClearTimer, lastOpenCodeOutputTime, setOpenCodeOutputBuffer, setOpenCodeCurrentScreen, setOpenCodeOutputTimer, setOpenCodeAutoClearTimer, setLastOpenCodeOutputTime } from '../../core/state';
-import { OPENCODE_OUTPUT_THROTTLE_MS, OPENCODE_OUTPUT_AUTO_CLEAR_MS, OPENCODE_OUTPUT_MAX_BUFFER_SIZE, ANSI_CLEAR_SCREEN_PATTERNS } from '../../core/constants';
+import { OPENCODE_OUTPUT_THROTTLE_MS, OPENCODE_OUTPUT_AUTO_CLEAR_MS, ANSI_CLEAR_SCREEN_PATTERNS } from '../../core/constants';
 import { debugLog, formatTerminalOutput, sendToWebviewTerminal } from '../../utils/logging';
 import { getMobileServer } from '../../services/mobile/index';
 
 // Debouncing for repeated debug messages
 let lastClearScreenLogTime = 0;
-let clearScreenLogCount = 0;
 const CLEAR_SCREEN_LOG_DEBOUNCE_MS = 1000;
 
 // Track sent content to avoid duplicates
 let lastExtractedContent = '';
 let sentContentHashes = new Set<string>();
 let lastSentTimestamp = 0;
-const MIN_SEND_INTERVAL_MS = 1000; // Minimum 1 second between messages
 
 /**
  * Comprehensive ANSI and TUI cleaning
@@ -66,255 +64,6 @@ export function stripAnsiAndTui(text: string): string {
 }
 
 /**
- * Extract meaningful content blocks from OpenCode's TUI output
- * Returns an array of content sections that are worth displaying
- */
-function extractMeaningfulContent(text: string): string[] {
-    if (!text) return [];
-    
-    const clean = stripAnsiAndTui(text);
-    const lines = clean.split('\n');
-    const contentBlocks: string[] = [];
-    const currentBlock: string[] = [];
-    
-    // Patterns to completely skip
-    const skipPatterns = [
-        /^● Tip/i,
-        /^v\d+\.\d+\.\d+/,
-        /^Build\s/i,
-        /^Proxy$/i,
-        /^ctrl\+[a-z]/i,
-        /^tab\s+agents/i,
-        /^Ask anything\.\.\./i,
-        /^# New session/i,
-        /^Click to expand/i,
-        /^esc.*interrupt/i,
-        /^Writing command\.\.\./i,
-        /^Running command\.\.\./i,
-        /^\[retrying attempt/i,
-        /^\d+,\d+\s+\d+%/,
-        /^\d+\s+\d+\.\d+s\s*$/,
-        /^ant_[\w-]+/i,
-        /^gemini/i,
-        /^\?\s*for\s+shortcuts/i,
-        /^>\s*$/,
-        /^QUEUED$/i,
-        /^PENDING$/i,
-        /^PROCESSING$/i,
-        /^[→←✱~]\s*(Read|Edit|Grep|Write|Glob|Bash|Task)/i,
-        /^(Read|Edit|Grep|Write|Glob|Bash)\s+["']?[\w./\\-]+/i,
-        /^~\s*(Preparing|Searching|Loading|Analyzing)/i,
-        /^\$\s+\w+/,
-        /^[A-Z_]+\*?\s*$/,
-        /^\s+at\s+\w+/,
-        /^Error:/,
-        /^\(\$[\d.]+\)/,
-        /^\d+[,\d]*\s+tokens?/i,
-        /^\[\d+/,
-        /^Reply from/,
-        /^time<\d+ms/,
-        /^<system-reminder>/i,
-        /^<\/system-reminder>/i,
-    ];
-    
-    // Patterns that indicate meaningful content - be more inclusive
-    const meaningfulPatterns = [
-        /^Thinking:/i,
-        /^I /i,  // Any sentence starting with "I "
-        /^We /i,
-        /^The /i,
-        /^This /i,
-        /^Let /i,
-        /^Here/i,
-        /^Now /i,
-        /^Next /i,
-        /^First/i,
-        /^Finally/i,
-        /^# /,  // Markdown headers
-        /^## /,
-        /^### /,
-        /^- /,  // Bullet points
-        /^\* /,
-        /^\d+\. /,  // Numbered lists
-        /^Goal:/i,
-        /^Summary/i,
-        /^Step/i,
-        /^Task/i,
-        /^Test/i,
-        /^Config/i,
-        /^Queue/i,
-        /^Error/i,
-        /^Success/i,
-        /^Warning/i,
-        /passing/i,
-        /failing/i,
-        /complete/i,
-        /created/i,
-        /updated/i,
-        /Specification/i,
-        /Pseudocode/i,
-        /Architecture/i,
-        /Refinement/i,
-        /Completion/i,
-        /Okay/i,
-        /Alright/i,
-        /Sure/i,
-        /Great/i,
-        /Perfect/i,
-        /Done/i,
-        /Finished/i,
-        /Working/i,
-        /Running/i,
-        /Analyzing/i,
-        /Reviewing/i,
-        /Implementing/i,
-        /Creating/i,
-        /Updating/i,
-    ];
-    
-    for (const line of lines) {
-        const trimmed = line.trim();
-        
-        // Skip empty or very short lines
-        if (trimmed.length < 3) {
-            // If we have a block building, add separator
-            if (currentBlock.length > 0) {
-                currentBlock.push('');
-            }
-            continue;
-        }
-        
-        // Skip noise patterns
-        if (skipPatterns.some(p => p.test(trimmed))) {
-            continue;
-        }
-        
-        // Skip lines that are mostly non-alphabetic (garbled)
-        const letters = (trimmed.match(/[a-zA-Z]/g) || []).length;
-        if (trimmed.length > 10 && letters / trimmed.length < 0.4) {
-            continue;
-        }
-        
-        // Skip lines that are just numbers or timers
-        if (/^\d+\.?\d*s?$/.test(trimmed) || /^\d+$/.test(trimmed)) {
-            continue;
-        }
-        
-        // Check if this is meaningful content
-        const isMeaningful = meaningfulPatterns.some(p => p.test(trimmed)) || 
-                            (trimmed.length > 30 && /^[A-Za-z]/.test(trimmed));
-        
-        if (isMeaningful) {
-            currentBlock.push(trimmed);
-        } else if (currentBlock.length > 0 && trimmed.length > 15) {
-            // Continue building block if we're in one and this looks like continuation
-            currentBlock.push(trimmed);
-        }
-    }
-    
-    // Finalize current block
-    if (currentBlock.length > 0) {
-        const blockText = currentBlock
-            .join('\n')
-            .replace(/\n{3,}/g, '\n\n')
-            .trim();
-        if (blockText.length > 20) {
-            contentBlocks.push(blockText);
-        }
-    }
-    
-    return contentBlocks;
-}
-
-/**
- * Create a simple hash of content for deduplication
- */
-function hashContent(content: string): string {
-    // Simple hash based on content and length
-    const normalized = content.toLowerCase().replace(/\s+/g, ' ').trim();
-    return `${normalized.length}_${normalized.slice(0, 50)}`;
-}
-
-/**
- * Check if content is new and worth sending
- */
-function shouldSendContent(content: string): boolean {
-    if (!content || content.length < 5) {
-        debugLog(`🚫 Content too short: ${content?.length || 0} chars`);
-        return false;
-    }
-    
-    const now = Date.now();
-    const timeSinceLastSent = now - lastSentTimestamp;
-    if (timeSinceLastSent < 300) { // Reduced from 1000ms to 300ms for more responsive updates
-        debugLog(`🚫 Too soon since last send: ${timeSinceLastSent}ms`);
-        return false;
-    }
-    
-    const hash = hashContent(content);
-    if (sentContentHashes.has(hash)) {
-        debugLog(`🚫 Duplicate content hash`);
-        return false;
-    }
-    
-    // Check if this is just a subset of what we already sent
-    if (lastExtractedContent && lastExtractedContent.includes(content)) {
-        debugLog(`🚫 Content is subset of last sent`);
-        return false;
-    }
-    if (content === lastExtractedContent) {
-        debugLog(`🚫 Content identical to last sent`);
-        return false;
-    }
-    
-    return true;
-}
-
-/**
- * Extract a readable summary from cleaned content when block extraction fails
- * This is a fallback to ensure the user always sees something
- */
-function extractSummaryFromCleanedContent(content: string): string {
-    if (!content || content.length < 50) return '';
-    
-    const lines = content.split('\n').filter(l => l.trim().length > 10);
-    
-    // Look for lines that start with meaningful patterns
-    const meaningfulLines: string[] = [];
-    
-    for (const line of lines) {
-        const trimmed = line.trim();
-        
-        // Skip lines that look like noise
-        if (/^\d+\s*$/.test(trimmed)) continue;
-        if (/^[a-z]$/.test(trimmed)) continue;
-        if (trimmed.length < 15) continue;
-        
-        // Check for meaningful sentence starts
-        if (/^(I |I'm |I'll |I've |The |This |That |We |It |My |Our |To |For |In |On |At |By |With |From |About |After |Before |During |Through |Between |Among |Under |Over |Above |Below |Into |Out |Up |Down |Here |There |Now |Then |Also |However |Therefore |Moreover |Furthermore |Additionally |Meanwhile |Subsequently |Consequently |Accordingly |Thus |Hence |So |Because |Since |Although |Though |While |Whereas |If |Unless |Until |When |Where |What |Which |Who |Whom |Whose |Why |How |Let |Please |Could |Would |Should |Can |May |Might |Must |Will |Shall )/i.test(trimmed)) {
-            meaningfulLines.push(trimmed);
-        }
-        // Check for task descriptions
-        else if (/^(Thinking|Goal|Specification|Pseudocode|Architecture|Refinement|Completion|Summary|Next|Step|Task|Test|Config|Queue|Error|Success|Create|Update|Delete|Read|Write|Edit|Run|Build|Install|Check)/i.test(trimmed)) {
-            meaningfulLines.push(trimmed);
-        }
-        // Check for status messages
-        else if (/passing|failing|complete|success|error|warning|created|updated|deleted|finished|started|running|stopped/i.test(trimmed)) {
-            meaningfulLines.push(trimmed);
-        }
-    }
-    
-    if (meaningfulLines.length === 0) {
-        // Last resort: just take the first few substantial lines
-        const substantialLines = lines.filter(l => l.trim().length > 30).slice(0, 5);
-        return substantialLines.join('\n').trim();
-    }
-    
-    // Return the last few meaningful lines (most recent context)
-    return meaningfulLines.slice(-5).join('\n').trim();
-}
-
-/**
  * Track that we sent this content
  */
 function trackSentContent(content: string): void {
@@ -355,7 +104,6 @@ export function sendOpenCodeOutput(output: string): void {
         if (now - lastClearScreenLogTime >= CLEAR_SCREEN_LOG_DEBOUNCE_MS) {
             debugLog(`🖥️  Clear screen detected - reset screen buffer`);
             lastClearScreenLogTime = now;
-            clearScreenLogCount = 0;
         }
         
         const newScreen = opencodeOutputBuffer.substring(lastClearScreenIndex);
