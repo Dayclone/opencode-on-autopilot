@@ -57,6 +57,31 @@ jobs:
           git tag ${{ steps.bump.outputs.tag }}
           git push origin ${{ steps.bump.outputs.tag }}
 
-      # The push of the tag will automatically trigger the Release workflow (release.yml)
-      # which handles the build, changelog generation, and GitHub Release creation.
+      - name: Compile and Bundle
+        run: npm run compile
+
+      - name: Package extension
+        id: package
+        run: |
+          npx @vscode/vsce package --no-dependencies --allow-star-activation -o opencode-on-autopilot-${{ steps.bump.outputs.new_version }}.vsix
+          echo "filename=$(ls *.vsix)" >> $GITHUB_OUTPUT
+
+      - name: Generate Changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: changelog.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.bump.outputs.tag }}
+          name: Release ${{ steps.bump.outputs.new_version }}
+          body_path: changelog.txt
+          files: ${{ steps.package.outputs.filename }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
