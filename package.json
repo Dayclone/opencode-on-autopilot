@@ -14,7 +14,13 @@
   ],
   "main": "./out/extension.js",
   "activationEvents": [
-    "*"
+    "onCommand:opencode-on-autopilot.start",
+    "onCommand:opencode-on-autopilot.stop",
+    "onCommand:opencode-on-autopilot.addMessage",
+    "onCommand:opencode-on-autopilot.startWebInterface",
+    "onCommand:opencode-on-autopilot.stopWebInterface",
+    "onCommand:opencode-on-autopilot.showWebInterfaceQR",
+    "onStartupFinished"
   ],
   "contributes": {
     "commands": [
@@ -191,12 +197,11 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "cross-env DEBUG_MODE=false npm run compile && npm run copy-deps",
-    "compile": "tsc -p ./ && shx cp src/opencode_pty_wrapper.py out/opencode/session/ && shx cp -r src/webview out/",
-    "copy-deps": "node scripts/copy-deps.js",
-    "watch": "tsc -watch -p ./",
-    "package": "cross-env DEBUG_MODE=false npx @vscode/vsce package",
-    "publish": "npx @vscode/vsce publish",
+    "vscode:prepublish": "cross-env NODE_ENV=production npm run compile",
+    "compile": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "package": "cross-env DEBUG_MODE=false npx @vscode/vsce package --no-dependencies --allow-star-activation",
+    "publish": "npx @vscode/vsce publish --allow-star-activation",
     "prepackage": "npm run compile",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -223,6 +228,7 @@
     "@vscode/vsce": "^3.7.1",
     "chai": "^6.2.2",
     "cross-env": "^10.1.0",
+    "esbuild": "^0.27.2",
     "eslint": "^9.39.2",
     "globals": "^17.2.0",
     "mocha": "^11.7.5",

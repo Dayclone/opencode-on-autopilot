@@ -70,12 +70,10 @@ jobs:
         run: npm test
 
       - name: Compile and Bundle
-        run: |
-          npm run compile
-          npm run copy-deps
+        run: npm run compile
 
       - name: Package extension
-        run: npx @vscode/vsce package --no-dependencies -o opencode-on-autopilot-${{ steps.version.outputs.version }}.vsix
+        run: npx @vscode/vsce package --no-dependencies --allow-star-activation -o opencode-on-autopilot-${{ steps.version.outputs.version }}.vsix
 
       - name: Get VSIX filename
         id: vsix

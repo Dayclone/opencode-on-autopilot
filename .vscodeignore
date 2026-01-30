@@ -47,26 +47,24 @@ desktop.ini
 *.swo
 *~
 
-# Development documentation
+# OpenCode / Claude Code files
 CLAUDE.md
-demo.md
+.claude/
+OPENCODE.md
+.opencode/
+esbuild.js
+cliff.toml
+docs/prompts/**
 
-# IDE and editor files
-.idea/**
-.history/**
-.vscode/**
-
-# Package files
-*.vsix
-
-# Environment files
-.env*
-
-# Backup files
-*.bak
-*.backup
+# Archive and legacy files
+archive/**
+mirrowell-github/**
+C:/**
+.nyc_output/**
+coverage/**
 
 # Test output files (created during testing)
 FINAL_*.txt
 TASK_*.txt
 *.test.txt
+*.vsix
