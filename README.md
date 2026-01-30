@@ -268,7 +268,7 @@ Contributions are welcome! Feel free to:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Based on Claude Autopilot by Ben Basha. Made by Dayclone.
+Based on Claude Autopilot. Made by Dayclone.
 
 ## 🐛 Known Issues & Troubleshooting
 

@@ -287,7 +287,7 @@ export function activate(context: vscode.ExtensionContext) {
                             break;
                         case 'openSettings':
                             try {
-                                vscode.commands.executeCommand('workbench.action.openSettings', '@ext:tarushvkodes.opencode-on-autopilot');
+                                vscode.commands.executeCommand('workbench.action.openSettings', '@ext:dayclone.opencode-on-autopilot');
                             } catch (error) {
                                 debugLog(`Error opening settings: ${error}`);
                                 showErrorFromException(error, Messages.FAILED_TO_OPEN_SETTINGS);
