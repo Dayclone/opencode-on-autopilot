@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -75,7 +75,7 @@ jobs:
           npm run copy-deps
 
       - name: Package extension
-        run: vsce package --no-dependencies -o opencode-on-autopilot-${{ steps.version.outputs.version }}.vsix
+        run: npx @vscode/vsce package --no-dependencies -o opencode-on-autopilot-${{ steps.version.outputs.version }}.vsix
 
       - name: Get VSIX filename
         id: vsix
@@ -126,7 +126,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -138,4 +138,4 @@ jobs:
       - name: Compile and package
         run: |
           npm run compile
-          npx vsce package --no-dependencies
+          npx @vscode/vsce package --no-dependencies

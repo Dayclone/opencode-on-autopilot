@@ -5,7 +5,8 @@
   "version": "0.1.7",
   "icon": "icon.png",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.74.0",
+    "node": ">=20.18.1"
   },
   "categories": [
     "Machine Learning",
@@ -194,8 +195,8 @@
     "compile": "tsc -p ./ && shx cp src/opencode_pty_wrapper.py out/opencode/session/ && shx cp -r src/webview out/",
     "copy-deps": "node scripts/copy-deps.js",
     "watch": "tsc -watch -p ./",
-    "package": "cross-env DEBUG_MODE=false vsce package",
-    "publish": "vsce publish",
+    "package": "cross-env DEBUG_MODE=false npx @vscode/vsce package",
+    "publish": "npx @vscode/vsce publish",
     "prepackage": "npm run compile",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -219,6 +220,7 @@
     "@types/sinon": "^21.0.0",
     "@types/vscode": "^1.108.1",
     "@types/ws": "^8.18.1",
+    "@vscode/vsce": "^3.7.1",
     "chai": "^6.2.2",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.2",

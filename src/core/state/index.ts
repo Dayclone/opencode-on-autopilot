@@ -125,7 +125,7 @@ function notifyMobileStatusUpdate(): void {
         if (mobileServer.isRunning()) {
             mobileServer.notifyStatusUpdate();
         }
-    } catch (error) {
+    } catch (_error) {
         // Silently fail if mobile service isn't available
     }
 }
@@ -140,7 +140,7 @@ function notifyMobileQueueUpdate(): void {
         if (mobileServer.isRunning()) {
             mobileServer.notifyQueueUpdate();
         }
-    } catch (error) {
+    } catch (_error) {
         // Silently fail if mobile service isn't available
     }
 }

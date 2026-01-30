@@ -3,18 +3,18 @@
 /**
  * Standalone API Server Runner
  * 
- * This script runs the Claude Autopilot API server independently from the VS Code extension
+ * This script runs the OpenCode Autopilot API server independently from the VS Code extension
  * for testing and development purposes.
  */
 
-import { APIServer } from './src/api/server';
+import { APIServer } from '../src/api/server';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8000;
 
 async function main() {
-    console.log('🚀 Starting Claude Autopilot API Server...');
+    console.log('🚀 Starting OpenCode Autopilot API Server...');
     console.log(`📡 Port: ${PORT}`);
-    console.log('🔗 This server provides OpenAI-compatible API endpoints for Claude CLI');
+    console.log('🔗 This server provides OpenAI-compatible API endpoints for OpenCode CLI');
     console.log('');
 
     const server = new APIServer(PORT);

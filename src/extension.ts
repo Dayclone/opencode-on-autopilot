@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import {
-    opencodePanel, isRunning, setOpenCodePanel, setIsRunning,
-    setExtensionContext, setDebugMode, isDevelopmentMode, developmentOnly,
+    opencodePanel, isRunning, setOpenCodePanel,
+    setExtensionContext, setDebugMode, developmentOnly,
     getValidatedConfig, showConfigValidationStatus, resetConfigToDefaults, watchConfigChanges, debugMode
 } from './core';
 import { updateWebviewContent, updateSessionState, getWebviewContent, sendHistoryVisibilitySettings } from './ui';

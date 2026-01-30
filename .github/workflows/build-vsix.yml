@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -44,7 +44,7 @@ jobs:
           # Use vsce to package. -o specifies the output filename
           # We use --no-dependencies because copy-deps already handles them in /out
           # and vsce normally looks at the root package.json
-          npx vsce package --no-dependencies -o opencode-on-autopilot-${{ steps.pkg.outputs.version }}-${{ github.run_number }}.vsix
+          npx @vscode/vsce package --no-dependencies -o opencode-on-autopilot-${{ steps.pkg.outputs.version }}-${{ github.run_number }}.vsix
 
       - name: Upload VSIX Artifact
         uses: actions/upload-artifact@v4

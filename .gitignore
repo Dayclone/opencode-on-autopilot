@@ -54,9 +54,11 @@ temp/
 .env.test.local
 .env.production.local
 
-# Claude Code files
+# OpenCode / Claude Code files
 CLAUDE.md
 .claude/
+OPENCODE.md
+.opencode/
 
 # Archive and legacy files
 archive/

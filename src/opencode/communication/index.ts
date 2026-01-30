@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
 import { MessageItem } from '../../core/types';
-import { messageQueue, opencodeProcess, sessionReady, processingQueue, currentMessage, setCurrentMessage, setProcessingQueue, setIsRunning, isResettingSession, setIsResettingSession } from '../../core/state';
+import { messageQueue, opencodeProcess, sessionReady, processingQueue, _currentMessage, setCurrentMessage, setProcessingQueue, setIsRunning, _isResettingSession, _setIsResettingSession } from '../../core/state';
 import { debugLog } from '../../utils/logging';
 import { getErrorMessage } from '../../utils/error-handler';
 import { updateWebviewContent, updateSessionState } from '../../ui/webview';
 import { saveWorkspaceHistory, ensureHistoryRun, updateMessageStatusInHistory, checkAndEndHistoryRunIfComplete, savePendingQueue } from '../../queue/processor/history';
-import { TIMEOUT_MS, ANSI_CLEAR_SCREEN_PATTERNS, TASK_TIMEOUT_MS } from '../../core/constants';
+import { _TIMEOUT_MS, ANSI_CLEAR_SCREEN_PATTERNS, TASK_TIMEOUT_MS } from '../../core/constants';
 import { startOpenCodeSession, resetOpenCodeSession } from '../../opencode/session';
-import { getMobileServer } from '../../services/mobile/index';
+import { _getMobileServer } from '../../services/mobile/index';
 import { getValidatedConfig } from '../../core/config';
 
 // Debouncing for repeated debug messages
-const lastOutputLogTime = 0;
-const OUTPUT_LOG_DEBOUNCE_MS = 1000;
+const _lastOutputLogTime = 0;
+const _OUTPUT_LOG_DEBOUNCE_MS = 1000;
 
 export async function processNextMessage(): Promise<void> {
     debugLog('--- PROCESSING NEXT MESSAGE ---');
@@ -177,7 +177,7 @@ function waitForPrompt(): Promise<void> {
         const NO_OUTPUT_TIMEOUT_MS = 15000; // If no new output for 15s after activity, consider complete (increased from 8s)
         const CONTENT_CHANGE_TOLERANCE = 50; // Ignore changes smaller than 50 chars (TUI noise)
         const MIN_TASK_TIME_MS = 30000; // Minimum 30 seconds before allowing task completion (increased from 15s)
-        const MIN_OUTPUT_FOR_THINKING = 200; // Minimum cleaned output length to consider "thinking started"
+        const _MIN_OUTPUT_FOR_THINKING = 200; // Minimum cleaned output length to consider "thinking started"
 
         const stripAnsi = (str: string) => str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
         
@@ -549,11 +549,18 @@ function waitForPrompt(): Promise<void> {
 }
 
 export async function startProcessingQueue(skipPermissions: boolean = true): Promise<void> {
-    debugLog(`🚀 Starting queue processing`);
+    debugLog(`🚀 Starting queue processing (skipPermissions=${skipPermissions})`);
     ensureHistoryRun();
     setProcessingQueue(true);
     setIsRunning(true);
     updateSessionState();
+    
+    // Explicitly check for session and pass skipPermissions
+    const config = getValidatedConfig();
+    if (!opencodeProcess) {
+        await startOpenCodeSession(skipPermissions);
+    }
+    
     processNextMessage();
 }
 

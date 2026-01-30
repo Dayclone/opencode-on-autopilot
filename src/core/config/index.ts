@@ -82,7 +82,7 @@ export const DEFAULT_CONFIG: OpenCodeAutopilotConfig = {
 
 export interface ConfigValidationError {
     path: string;
-    value: any;
+    value: unknown;
     expected: string;
     message: string;
 }
@@ -91,7 +91,7 @@ export function validateConfig(config: Partial<OpenCodeAutopilotConfig>): Config
     const errors: ConfigValidationError[] = [];
     
     // Helper function to add validation errors
-    const addError = (path: string, value: any, expected: string, message: string) => {
+    const addError = (path: string, value: unknown, expected: string, message: string) => {
         errors.push({ path, value, expected, message });
     };
     
@@ -279,13 +279,13 @@ function getDefaultsForInvalidConfig(config: OpenCodeAutopilotConfig, errors: Co
         
         // Navigate to the correct nested object
         for (let i = 0; i < pathParts.length - 1; i++) {
-            defaultValue = (defaultValue as any)[pathParts[i]];
-            targetObject = (targetObject as any)[pathParts[i]];
+            defaultValue = (defaultValue as unknown as Record<string, unknown>)[pathParts[i]] as OpenCodeAutopilotConfig;
+            targetObject = (targetObject as unknown as Record<string, unknown>)[pathParts[i]] as OpenCodeAutopilotConfig;
         }
         
         // Set the default value
         const finalKey = pathParts[pathParts.length - 1];
-        (targetObject as any)[finalKey] = (defaultValue as any)[finalKey];
+        (targetObject as unknown as Record<string, unknown>)[finalKey] = (defaultValue as unknown as Record<string, unknown>)[finalKey];
     });
     
     return fixedConfig;
