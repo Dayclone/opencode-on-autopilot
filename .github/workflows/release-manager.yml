@@ -57,27 +57,6 @@ jobs:
           git tag ${{ steps.bump.outputs.tag }}
           git push origin ${{ steps.bump.outputs.tag }}
 
-      # Now that the tag is pushed, the Release workflow (release.yml) will trigger
-      # but we can also run the build and release steps here for a single-workflow experience.
-      
-      - name: Compile and Bundle
-        run: |
-          npm run compile
-          npm run copy-deps
+      # The push of the tag will automatically trigger the Release workflow (release.yml)
+      # which handles the build, changelog generation, and GitHub Release creation.
 
-      - name: Package extension
-        run: npx @vscode/vsce package --no-dependencies -o opencode-on-autopilot-${{ steps.bump.outputs.new_version }}.vsix
-
-      - name: Get VSIX filename
-        id: vsix
-        run: echo "filename=$(ls *.vsix)" >> $GITHUB_OUTPUT
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.bump.outputs.tag }}
-          name: Release ${{ steps.bump.outputs.new_version }}
-          body: "Automated release for version ${{ steps.bump.outputs.new_version }}. See [CHANGELOG.md](./CHANGELOG.md) for details."
-          files: ${{ steps.vsix.outputs.filename }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
