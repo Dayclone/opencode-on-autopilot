@@ -52,6 +52,19 @@ try {
     packageJson.version = newVersion;
     fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
     
+    // Update CHANGELOG.md
+    const changelogPath = path.join(__dirname, '..', 'CHANGELOG.md');
+    if (fs.existsSync(changelogPath)) {
+        let changelog = fs.readFileSync(changelogPath, 'utf8');
+        const date = new Date().toISOString().split('T')[0];
+        const newSection = `## [${newVersion}] - ${date}\n`;
+        
+        // Move [Unreleased] content to the new version section
+        changelog = changelog.replace('## [Unreleased]', `## [Unreleased]\n\n${newSection}`);
+        fs.writeFileSync(changelogPath, changelog);
+        console.log(`Updated CHANGELOG.md`);
+    }
+    
     console.log(`Updated package.json`);
     console.log('');
     console.log('Next steps:');

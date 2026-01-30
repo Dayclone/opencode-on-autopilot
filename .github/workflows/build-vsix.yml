@@ -1,0 +1,54 @@
+name: Build VSIX
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+    inputs:
+      include-debug:
+        description: 'Include debug info in build'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: Build Extension Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile and Bundle
+        run: |
+          npm run compile
+          npm run copy-deps
+
+      - name: Get Version
+        id: pkg
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Package VSIX
+        run: |
+          # Use vsce to package. -o specifies the output filename
+          # We use --no-dependencies because copy-deps already handles them in /out
+          # and vsce normally looks at the root package.json
+          npx vsce package --no-dependencies -o opencode-on-autopilot-${{ steps.pkg.outputs.version }}-${{ github.run_number }}.vsix
+
+      - name: Upload VSIX Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix-package
+          path: "*.vsix"
+          retention-days: 7

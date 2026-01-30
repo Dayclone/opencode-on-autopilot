@@ -69,11 +69,13 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Compile TypeScript
-        run: npm run compile
+      - name: Compile and Bundle
+        run: |
+          npm run compile
+          npm run copy-deps
 
       - name: Package extension
-        run: vsce package --no-dependencies
+        run: vsce package --no-dependencies -o opencode-on-autopilot-${{ steps.version.outputs.version }}.vsix
 
       - name: Get VSIX filename
         id: vsix
