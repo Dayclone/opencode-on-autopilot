@@ -1,11 +1,12 @@
+# This ensures @Dayclone must approve any change to any file
 # Default owners for everything in the repo
-* @tarushvkodes
+* @Dayclone
 
 # CI/CD configuration
-/.github/ @tarushvkodes
+/.github/ @Dayclone
 
 # Core extension code
-/src/ @tarushvkodes
+/src/ @Dayclone
 
 # Tests
-/test/ @tarushvkodes
+/test/ @Dayclone

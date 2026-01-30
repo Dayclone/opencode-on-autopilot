@@ -4,7 +4,7 @@ const tseslint = require('typescript-eslint');
 
 module.exports = [
   {
-    ignores: ["out/**", "node_modules/**", "dist/**"]
+    ignores: ["out/**", "node_modules/**", "dist/**", "coverage/**", ".nyc_output/**"]
   },
   {
     // ES6 modules (most files in web/js/)
