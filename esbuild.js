@@ -6,6 +6,14 @@ const production = process.env.NODE_ENV === 'production';
 const watch = process.argv.includes('--watch');
 
 async function main() {
+    // Clean out directory
+    const outDir = path.resolve(__dirname, 'out');
+    if (fs.existsSync(outDir)) {
+        console.log('🧹 Cleaning out directory...');
+        fs.rmSync(outDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(outDir);
+
     const ctx = await esbuild.context({
         entryPoints: ['src/extension.ts'],
         bundle: true,
