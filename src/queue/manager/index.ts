@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import { MessageItem } from '../../core/types';
-import { messageQueue, opencodePanel, processingQueue, sessionReady, setProcessingQueue, setIsRunning } from '../../core/state';
+import { messageQueue, processingQueue, sessionReady, setProcessingQueue, setIsRunning } from '../../core/state';
 import { debugLog } from '../../utils/logging';
 import { updateWebviewContent } from '../../ui/webview';
 import { processNextMessage } from '../../opencode/communication';
-import { enforceMessageSizeLimits, enforceQueueSizeLimit, performQueueMaintenance } from '../memory';
+import { enforceMessageSizeLimits, enforceQueueSizeLimit } from '../memory';
 import { savePendingQueue } from '../processor/history';
 import { generateMessageId } from '../../utils/id-generator';
 

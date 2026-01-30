@@ -142,18 +142,18 @@ export async function checkPythonInstallation(): Promise<DependencyCheckResult> 
         triedCommands.push(pythonCommand);
         try {
             const { command, args } = wrapCommandForWSL(pythonCommand, ['--version']);
-            const { error, status, stdout, stderr } = spawnSync(command, args, { 
+            const result = spawnSync(command, args, { 
                 stdio: 'pipe',
                 encoding: 'utf8',
                 timeout: 15000
             });
             
-            if (error) {
+            if (result.error) {
                 // Command not found or failed to execute
                 continue;
             }
             
-            if (status !== 0) {
+            if (result.status !== 0) {
                 // Command executed but returned non-zero status
                 continue;
             }
@@ -173,7 +173,7 @@ export async function checkPythonInstallation(): Promise<DependencyCheckResult> 
                     installInstructions: getPythonInstallInstructions()
                 };
             }
-        } catch (error) {
+        } catch {
             // Continue to next python command
             continue;
         }
@@ -262,7 +262,7 @@ async function verifyPythonVersion(pythonCommand: string): Promise<{valid: boole
         } else {
             return { valid: false, version: versionOutput.trim() };
         }
-    } catch (error) {
+    } catch {
         return { valid: false, version: 'unknown' };
     }
 }

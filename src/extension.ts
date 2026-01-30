@@ -482,7 +482,7 @@ export function activate(context: vscode.ExtensionContext) {
             
             try {
                 const webServer = getMobileServer();
-                const baseUrl = await webServer.start();
+                await webServer.start();
                 
                 // Generate QR code and get the authenticated URL
                 const qrCodeDataUrl = await webServer.generateQRCode();

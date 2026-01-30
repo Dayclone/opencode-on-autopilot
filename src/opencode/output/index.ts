@@ -8,9 +8,28 @@ let lastClearScreenLogTime = 0;
 const CLEAR_SCREEN_LOG_DEBOUNCE_MS = 1000;
 
 // Track sent content to avoid duplicates
-let lastExtractedContent = '';
 let sentContentHashes = new Set<string>();
-let lastSentTimestamp = 0;
+
+/**
+ * Simple hash function for content deduplication
+ */
+function hashContent(content: string): string {
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+        const char = content.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString(16);
+}
+
+/**
+ * Check if content should be sent (not a duplicate)
+ */
+function shouldSendContent(content: string): boolean {
+    const hash = hashContent(content);
+    return !sentContentHashes.has(hash);
+}
 
 /**
  * Comprehensive ANSI and TUI cleaning
@@ -67,9 +86,6 @@ export function stripAnsiAndTui(text: string): string {
  * Track that we sent this content
  */
 function trackSentContent(content: string): void {
-    lastExtractedContent = content;
-    lastSentTimestamp = Date.now();
-    
     const hash = hashContent(content);
     sentContentHashes.add(hash);
     
@@ -268,9 +284,7 @@ export function clearOpenCodeOutput(): void {
     setOpenCodeCurrentScreen('');
     
     // Reset tracking when output is cleared
-    lastExtractedContent = '';
     sentContentHashes.clear();
-    lastSentTimestamp = 0;
     
     if (opencodeOutputTimer) {
         clearTimeout(opencodeOutputTimer);
@@ -286,7 +300,5 @@ export function clearOpenCodeOutput(): void {
  * Reset output tracking (call when starting a new task)
  */
 export function resetOutputTracking(): void {
-    lastExtractedContent = '';
     sentContentHashes.clear();
-    lastSentTimestamp = 0;
 }

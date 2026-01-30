@@ -127,7 +127,6 @@ function parseDiffOutput(diffOutput: string, filePath: string): GitDiffResult {
 
     let oldLineNumber = 0;
     let newLineNumber = 0;
-    let lastHunkHeader = '';
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -186,7 +185,6 @@ function parseDiffOutput(diffOutput: string, filePath: string): GitDiffResult {
             if (match) {
                 oldLineNumber = parseInt(match[1]);
                 newLineNumber = parseInt(match[3]);
-                lastHunkHeader = line;
                 
                 // Check if this hunk can be expanded
                 const oldLines = parseInt(match[2]) || 1;
