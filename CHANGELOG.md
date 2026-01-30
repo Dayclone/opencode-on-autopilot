@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-01-30
+
+
 ## [1.0.0] - 2026-01-30
 
 - Ported robust CI/CD workflows and templates from `mirrowell-github`
