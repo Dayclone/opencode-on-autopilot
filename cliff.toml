@@ -1,3 +1,7 @@
+[remote.github]
+owner = "Dayclone"
+repo = "opencode-on-autopilot"
+
 [changelog]
 header = """
 """
@@ -15,16 +19,16 @@ body = """
 {% if breaking_commits %}
 ### 💥 Breaking Changes
 {% for commit in breaking_commits -%}
-- {{ commit.message | split(pat="\n") | first | trim }} ([`{{ commit.id | truncate(length=7, end="") }}`]({{ repository_url }}/commit/{{ commit.id }})) by [[{{ commit.id }}|{{ commit.author.email }}|{{ commit.author.name }}]]
+- {{ commit.message | split(pat="\n") | first | trim }} ([`{{ commit.id | truncate(length=7, end="") }}`](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/commit/{{ commit.id }}))
 {% endfor -%}
 {% endif -%}
 
 {% for group, commits in commits | group_by(attribute="group") %}
 ### {{ group }}
 {% for commit in commits -%}
-- {{ commit.message | split(pat="\n") | first | trim }} ([`{{ commit.id | truncate(length=7, end="") }}`]({{ repository_url }}/commit/{{ commit.id }})) by [[{{ commit.id }}|{{ commit.author.email }}|{{ commit.author.name }}]]
+- {{ commit.message | split(pat="\n") | first | trim }} ([`{{ commit.id | truncate(length=7, end="") }}`](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/commit/{{ commit.id }}))
 {% endfor -%}
-{% endfor -%}
+{% endif -%}
 """
 footer = ""
 
@@ -33,7 +37,7 @@ conventional_commits = true
 filter_unconventional = false
 split_commits = false
 commit_preprocessors = [
-    { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}]({{ repository_url }}/issues/${2}))"},
+    { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](https://github.com/Dayclone/opencode-on-autopilot/issues/${2}))"},
 ]
 
 commit_parsers = [
