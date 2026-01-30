@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [1.0.0] - 2026-01-30
+
 - Ported robust CI/CD workflows and templates from `mirrowell-github`
 - Integrated `git-cliff` for automated changelog generation
 - Added `cleanup.yml` for automated release pruning
