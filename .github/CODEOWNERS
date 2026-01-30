@@ -1,0 +1,11 @@
+# Default owners for everything in the repo
+* @tarushvkodes
+
+# CI/CD configuration
+/.github/ @tarushvkodes
+
+# Core extension code
+/src/ @tarushvkodes
+
+# Tests
+/test/ @tarushvkodes

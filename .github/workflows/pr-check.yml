@@ -1,0 +1,64 @@
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  validate-pr:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check PR title format
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          # Allow conventional commit format or simple descriptive titles
+          if [[ ! "$PR_TITLE" =~ ^(feat|fix|docs|style|refactor|test|chore|ci|perf|build|revert)(\(.+\))?:\ .+ ]] && [[ ${#PR_TITLE} -lt 10 ]]; then
+            echo "Warning: PR title should follow conventional commit format or be descriptive (10+ chars)"
+            echo "Examples: 'feat: add new feature', 'fix(auth): resolve login issue'"
+          fi
+
+      - name: Check for CHANGELOG entry
+        if: "!contains(github.event.pull_request.labels.*.name, 'skip-changelog')"
+        run: |
+          # Just a reminder, not blocking
+          if ! git diff origin/${{ github.base_ref }}...HEAD --name-only | grep -q "CHANGELOG"; then
+            echo "Note: Consider adding a CHANGELOG entry for significant changes"
+          fi
+
+  size-label:
+    name: Label PR Size
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate PR size
+        id: size
+        run: |
+          ADDITIONS=${{ github.event.pull_request.additions }}
+          DELETIONS=${{ github.event.pull_request.deletions }}
+          TOTAL=$((ADDITIONS + DELETIONS))
+          
+          if [ $TOTAL -lt 10 ]; then
+            SIZE="XS"
+          elif [ $TOTAL -lt 50 ]; then
+            SIZE="S"
+          elif [ $TOTAL -lt 200 ]; then
+            SIZE="M"
+          elif [ $TOTAL -lt 500 ]; then
+            SIZE="L"
+          else
+            SIZE="XL"
+          fi
+          
+          echo "size=$SIZE" >> $GITHUB_OUTPUT
+          echo "PR Size: $SIZE (${ADDITIONS} additions, ${DELETIONS} deletions)"
